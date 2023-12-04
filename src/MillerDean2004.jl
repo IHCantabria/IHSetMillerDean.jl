@@ -15,7 +15,7 @@
 # Omega: Dean's parameter             #
 #######################################
 """
-using IHSetUtils
+
 
 function MILLER_DEAN_extr(hb, depthb, sl, Y0, dt, D50, Hberm, kero, kacr, Yi, flagP = 1, Omega = 0)
     if flagP == 1
