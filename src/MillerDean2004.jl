@@ -16,6 +16,7 @@
 #######################################
 """
 
+
 function MILLER_DEAN_extr(hb, depthb, sl, Y0, dt, D50, Hberm, kero, kacr, Yi, flagP = 1, Omega = 0)
     if flagP == 1
         kero = fill(kero, length(hb))
@@ -34,7 +35,7 @@ function MILLER_DEAN_extr(hb, depthb, sl, Y0, dt, D50, Hberm, kero, kacr, Yi, fl
     yeq = similar(hb)
     Y = similar(hb)
     wl = 0.106 .* hb .+ sl
-    Wast = MOR.wast(depthb, D50)
+    Wast = wast(depthb, D50)
     @views yeq .= Y0 .- Wast .* wl ./ (Hberm .+ depthb)
     acr_count = 0
     ero_count = 0
