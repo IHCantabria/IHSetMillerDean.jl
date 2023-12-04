@@ -1,0 +1,16 @@
+name = "IHSetMillerDean"
+uuid = "be2c7fd7-4d1e-4129-8248-c815accc632f"
+authors = ["defreitasL <lucas12.fp@hotmail.com> and contributors"]
+version = "1.0.0-DEV"
+
+[deps]
+IHSetUtils = "2fbe2ced-d81f-41b4-8f59-9b074fb3e7ff"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
