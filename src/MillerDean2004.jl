@@ -57,7 +57,7 @@ function run_MillerDean()
         println("Breaking waves by linear theory...")
         Hb, θ_b, depthb = WAV.BreakingPropagation(Hs, Tp, θ_w, auxAng, auxDepth, "spectral")
     else
-        Hb, Tp, hs, depthb = wavF["Hb"][:], wavF["Tp"][:], wavF["Hs"][:], wavF["hb"][:]
+        Hb, Tp, Hs, depthb = wavF["Hb"][:], wavF["Tp"][:], wavF["Hs"][:], wavF["hb"][:]
     end
     
     close(wavF)
