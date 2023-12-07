@@ -1,7 +1,7 @@
 module IHSetMillerDean
 
 using IHSetUtils
-export MILLER_DEAN, MILLER_DEAN_extr
+export run_MillerDean
 include("MillerDean2004.jl")
 
 end
