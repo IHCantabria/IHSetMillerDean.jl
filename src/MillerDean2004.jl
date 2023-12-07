@@ -38,10 +38,6 @@ function run_MillerDean()
 
     dt = configF["dt"][:][1]
     
-    Hs = collect(skipmissing(wavF["hs"][:]))
-    Tp = collect(skipmissing(wavF["tp"][:]))
-    θ_w = collect(skipmissing(wavF["dir"][:]))
-    
     yi = collect(skipmissing(configF["yi"][:]))
 
     kacr = collect(skipmissing(parF["kacr"][:]))
@@ -52,14 +48,14 @@ function run_MillerDean()
 
     if brk == 1
         
-        hs, tp, θ_w = collect(skipmissing(wavF["Hs"][:])), collect(skipmissing(wavF["Tp"][:])), collect(skipmissing(wavF["Dir"][:]))
+        Hs, Tp, θ_w = collect(skipmissing(wavF["Hs"][:])), collect(skipmissing(wavF["Tp"][:])), collect(skipmissing(wavF["Dir"][:]))
 
-        auxAng, auxDepth = similar(hs), similar(hs)
+        auxAng, auxDepth = similar(Hs), similar(Hs)
         auxAng .= angBati
         auxDepth .= depth
 
         println("Breaking waves by linear theory...")
-        Hb, θ_b, depthb = WAV.BreakingPropagation(hs, tp, θ_w, auxAng, auxDepth, "spectral")
+        Hb, θ_b, depthb = WAV.BreakingPropagation(Hs, Tp, θ_w, auxAng, auxDepth, "spectral")
     else
         Hb, tp, hs, depthb = wavF["Hb"][:], wavF["Tp"][:], wavF["Hs"][:], wavF["hb"][:]
     end
