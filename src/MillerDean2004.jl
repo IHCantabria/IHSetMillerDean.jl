@@ -38,11 +38,11 @@ function run_MillerDean()
 
     dt = configF["dt"][:][1]
     
-    yi = collect(skipmissing(configF["yi"][:]))
+    yi = configF["yi"][:][1]
 
-    kacr = collect(skipmissing(parF["kacr"][:]))
-    kero = collect(skipmissing(parF["kero"][:]))
-    Y0 = collect(skipmissing(parF["Y0"][:]))
+    kacr = parF["kacr"][:][1]
+    kero = parF["kero"][:][1]
+    Y0 = parF["Y0"][:][1]
     
     brk, angBati, depth, Hberm, D50 = configF["brk"][:][1], configF["angBati"][:][1], configF["depth"][:][1], configF["Hberm"][:][1], configF["D50"][:][1]
 
@@ -55,7 +55,7 @@ function run_MillerDean()
         auxDepth .= depth
 
         println("Breaking waves by linear theory...")
-        Hb, θ_b, depthb = WAV.BreakingPropagation(Hs, Tp, θ_w, auxAng, auxDepth, "spectral")
+        Hb, θ_b, depthb = BreakingPropagation(Hs, Tp, θ_w, auxAng, auxDepth, "spectral")
     else
         Hb, Tp, Hs, depthb = wavF["Hb"][:], wavF["Tp"][:], wavF["Hs"][:], wavF["hb"][:]
     end
