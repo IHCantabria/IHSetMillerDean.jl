@@ -191,11 +191,11 @@ function cal_MillerDean()
     t_obs = DateTime.(YYo, MMo, DDo, HHo)
     t_wav = DateTime.(YY, MM, DD, HH)
 
-    ii =  t_obs .<= t_wav[end] .& t_obs .>= t_wav[1]
+    ii =  t_obs .<= t_wav[end] .&& t_obs .>= t_wav[1]
 
     t_obs, Y_obs = t_obs[ii], Y_obs[ii]
 
-    ii =  t_wav .<= t_obs[end] .& t_wav .>= t_obs[1]
+    ii =  t_wav .<= t_obs[end] .&& t_wav .>= t_obs[1]
 
     t_wav, hb, tp, sl, hs, depthb = t_wav[ii], Hb[ii], Tp[ii], sl[ii], Hs[ii], depthb[ii]
 
