@@ -222,7 +222,7 @@ version = "0.3.23"
 
 [[deps.IHSetUtils]]
 deps = ["Conda", "Polynomials", "SciPy"]
-git-tree-sha1 = "6c67359a6bfe4b52e3455ce4e0c5215bc60fbd78"
+git-tree-sha1 = "1d897562197682450774f94c5485c1e5d6f18ab0"
 repo-rev = "main"
 repo-url = "https://github.com/IHCantabria/IHSetUtils.jl.git"
 uuid = "2fbe2ced-d81f-41b4-8f59-9b074fb3e7ff"
