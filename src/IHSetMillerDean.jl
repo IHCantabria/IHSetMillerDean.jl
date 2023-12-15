@@ -1,7 +1,9 @@
 module IHSetMillerDean
 
 using IHSetUtils
-export run_MillerDean
+using BlackBoxOptim
+using NCDatasets
+export run_MillerDean, cal_MillerDean
 include("MillerDean2004.jl")
 
 end

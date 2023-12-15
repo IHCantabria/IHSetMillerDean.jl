@@ -20,7 +20,6 @@ function run_MillerDean()
 
     println("Loading libraries...")
     wrkDir = pwd()
-    mods = wrkDir*"Modules\\"
     dats = wrkDir*"Data\\"
 
     # mods = wrkDir*"\\Modules\\"
@@ -29,7 +28,6 @@ function run_MillerDean()
     println("Loading datasets...")
 
     wavF = NCDataset(dats*"wav.nc")
-    ensF = NCDataset(dats*"ens.nc")
     parF = NCDataset(dats*"par.nc")
 
     configF = NCDataset(dats*"config.nc")
@@ -61,7 +59,6 @@ function run_MillerDean()
     end
     
     close(wavF)
-    close(ensF)
     close(configF)
     close(parF)
 
@@ -84,7 +81,7 @@ function run_MillerDean()
     println("Starting Jaramillo et al. (2021) - Shoreline Rotation Model...")
 
 
-    Y_t = MileerDean(Hb, depthb, sl, Y0, dt, D50, Hberm, kero, kacr, Yi, flagP = 1, Omega = 0)
+    Y_t = MileerDean(Hb, depthb, sl, Y0, dt, D50, Hberm, kero, kacr, Yi, flagP, Omega)
 
     println("\n\n****************Finished****************\n\n")
 
@@ -131,5 +128,127 @@ function MileerDean(Hb, depthb, sl, Y0, dt, D50, Hberm, kero, kacr, Yi, flagP = 
         ero_count = ero_count + !r
     end
 
-    return Y, yeq
+    return Y
+end
+
+
+function cal_MillerDean()
+
+    println("Loading libraries...")
+    wrkDir = pwd()
+    dats = wrkDir*"Data\\"
+
+    # mods = wrkDir*"\\Modules\\"
+    # dats = wrkDir*"\\Data\\"
+
+    println("Loading datasets...")
+
+    wavF = NCDataset(dats*"wav.nc")
+    ensF = NCDataset(dats*"ens.nc")
+    parF = NCDataset(dats*"par.nc")
+
+    configF = NCDataset(dats*"config.nc")
+
+    println("Unpacking datasets...")
+
+    dt = configF["dt"][:][1]
+    
+    yi = configF["yi"][:][1]
+
+    brk, angBati, depth, Hberm, D50 = configF["brk"][:][1], configF["angBati"][:][1], configF["depth"][:][1], configF["Hberm"][:][1], configF["D50"][:][1]
+
+    if brk == 1
+        
+        Hs, Tp, θ_w = collect(skipmissing(wavF["Hs"][:])), collect(skipmissing(wavF["Tp"][:])), collect(skipmissing(wavF["Dir"][:]))
+
+        auxAng, auxDepth = similar(Hs), similar(Hs)
+        auxAng .= angBati
+        auxDepth .= depth
+
+        println("Breaking waves by linear theory...")
+        Hb, θ_b, depthb = BreakingPropagation(Hs, Tp, θ_w, auxAng, auxDepth, "spectral")
+    else
+        Hb, Tp, Hs, depthb = wavF["Hb"][:], wavF["Tp"][:], wavF["Hs"][:], wavF["hb"][:]
+    end
+    
+    close(wavF)
+    close(ensF)
+    close(configF)
+
+    println("Datasets closed...")
+
+    Hs = convert(Array{Float64},Hs)
+    Tp = convert(Array{Float64},Tp)
+
+    Yi = convert(Array{Float64},yi)
+
+    ########## START HERE #############
+    w = wMOORE(D50)
+
+    Omega = Hb ./ (w .* Tp)
+
+    println("Starting Miller and Dean (2004) - Shoreline Evolution Model...")
+
+    function Calibra_MDr(Χ)
+        Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Yi, flagP, Omega)
+        # Ymd, _ = HM.MILLER_DEAN_CSonly(hb,hb./.78,sl,exp(Χ[1]),dt,D50,Hberm, exp(Χ[2]), exp(Χ[3]),Χ[4], flagP, Omega)
+        YYsl = Ymd[idx_obs]
+        if MetObj == "Pearson"
+            return 1 -  abs(sum((YYsl.-mean(YYsl)).*(Y_obs .- mean(Y_obs)))/(std(YYsl)*std(Y_obs)*length(YYsl)))
+        elseif MetObj == "RMSE"
+            return abs(sqrt(mean((YYsl .- Y_obs).^2)))
+        elseif MetObj == "MSS"
+            return sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2)
+        elseif MetObj == "BSS"
+            return (mean((YYsl .- Y_obs).^2) - mean((YYref .- Y_obs).^2))/mean((YYref .- Y_obs).^2)
+        elseif MetObj == "Double"
+            return (sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2), abs(sqrt(mean((YYsl .- Y_obs).^2))))
+        end
+    end
+    
+    boundsr = [(log(1e-7), log(1e-1)),
+               (log(1e-7), log(1e-1)),
+               (minimum(Y_obs), maximum(Y_obs))] 
+    
+    resr = bboptimize(Calibra_MDr; 
+                        # Method = :simultaneous_perturbation_stochastic_approximation,
+                        SearchRange = boundsr,
+                        NumDimensions = 3,
+                        PopulationSize = 5000,
+                        MaxSteps = 100000,
+                        FitnessTolerance = 1e-6,
+                        FitnessScheme=ParetoFitnessScheme{2}(is_minimizing=true),
+                        TraceMode=:compact,
+                        ϵ=0.01,
+                        τ = 0.25,
+                        MaxStepsWithoutEpsProgress = 20000,
+                        TargetFitness=(1, 0.1),
+                        Method=:borg_moea)
+    
+    objr = best_fitness(resr)
+    popr = best_candidate(resr)
+    
+    Ymdr = MileerDean(Hb, depthb, sl, popr[3], dt, D50, Hberm, exp(popr[1]), exp(popr[2]), Yi, flagP, Omega)
+    
+    Ysl = Ymdr[idx_obs]
+    aRP = sum((Ysl.-mean(Ysl)).*(Y_obs .- mean(Y_obs)))/(std(Ysl)*std(Y_obs)*length(Ysl))
+    aRMSE = sqrt(mean((Ysl .- Y_obs).^2))
+    aMSS = 1 - sum((Ysl .- Y_obs).^2)/length(Ysl)/(var(Ysl)+var(Y_obs)+(mean(Ysl)-mean(Y_obs))^2)
+    
+
+
+
+    Y_t = MileerDean(Hb, depthb, sl, Y0, dt, D50, Hberm, kero, kacr, Yi, flagP = 1, Omega = 0)
+
+    println("\n\n****************Finished****************\n\n")
+
+    hist["kacr"] = exp(popr[1])
+    hist["kero"] = exp(popr[2])
+    hist["Y0"] = popr[3]
+    hist["RP"] = aRP
+    hist["RMSE"] = aRMSE
+    hist["MSS"] = aMSS
+
+    return Y_t, hist
+    
 end
