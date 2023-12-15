@@ -171,9 +171,9 @@ function cal_MillerDean()
         Hb, Tp, Hs, depthb = wavF["Hb"][:], wavF["Tp"][:], wavF["Hs"][:], wavF["hb"][:]
     end
 
-    YY, MM, DD, HH = wavF["YY"][:], wavF["MM"][:], wavF["DD"][:], wavF["HH"][:]
+    YY, MM, DD, HH = wavF["Y"][:], wavF["M"][:], wavF["D"][:], wavF["h"][:]
 
-    YYo, MMo, DDo, HHo = ensF["YY"][:], ensF["MM"][:], ensF["DD"][:], ensF["HH"][:]
+    YYo, MMo, DDo, HHo = ensF["Y"][:], ensF["M"][:], ensF["D"][:], ensF["h"][:]
     
     Y_obs = ensF["Obs"][:]
 
