@@ -180,7 +180,7 @@ function cal_MillerDean()
     Hs = convert(Array{Float64},Hs)
     Tp = convert(Array{Float64},Tp)
 
-    Yi = convert(Array{Float64},yi)
+    Yi = convert(Float64,yi)
 
     ########## START HERE #############
     w = wMOORE(D50)
