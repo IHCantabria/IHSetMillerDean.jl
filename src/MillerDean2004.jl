@@ -163,6 +163,8 @@ function cal_MillerDean()
 
     flagP = Int(configF["flagP"][:][1])
 
+    MetObj = configF["MetObj"][:][1]
+
     sl = slF["sl"][:]
 
     if brk == 1
