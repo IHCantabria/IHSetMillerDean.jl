@@ -220,6 +220,8 @@ function cal_MillerDean()
         idx_obs[i] = findall((x)-> x == t_obs[i], t_wav)[1]
     end
 
+    idx_obs = convert(Array{Int64},idx_obs)
+
     ########## START HERE #############
     w = wMOORE(D50)
 
