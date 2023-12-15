@@ -20,7 +20,7 @@ function run_MillerDean()
 
     println("Loading libraries...")
     wrkDir = pwd()
-    dats = wrkDir*"Data\\"
+    dats = wrkDir*"/data/"
 
     # mods = wrkDir*"\\Modules\\"
     # dats = wrkDir*"\\Data\\"
@@ -136,7 +136,7 @@ function cal_MillerDean()
 
     println("Loading libraries...")
     wrkDir = pwd()
-    dats = wrkDir*"Data\\"
+    dats = wrkDir*"/data/"
 
     # mods = wrkDir*"\\Modules\\"
     # dats = wrkDir*"\\Data\\"
