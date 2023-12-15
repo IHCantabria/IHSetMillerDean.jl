@@ -170,7 +170,13 @@ function cal_MillerDean()
     else
         Hb, Tp, Hs, depthb = wavF["Hb"][:], wavF["Tp"][:], wavF["Hs"][:], wavF["hb"][:]
     end
+
+    YY, MM, DD, HH = wavF["YY"][:], wavF["MM"][:], wavF["DD"][:], wavF["HH"][:]
+
+    YYo, MMo, DDo, HHo = ensF["YY"][:], ensF["MM"][:], ensF["DD"][:], ensF["HH"][:]
     
+    Y_obs = ensF["Obs"][:]
+
     close(wavF)
     close(ensF)
     close(configF)
@@ -181,6 +187,23 @@ function cal_MillerDean()
     Tp = convert(Array{Float64},Tp)
 
     Yi = convert(Float64,yi)
+
+    t_obs = DateTime.(YYo, MMo, DDo, HHo)
+    t_wav = DateTime.(YY, MM, DD, HH)
+
+    ii =  t_obs .<= t_wav[end] .& t_obs .>= t_wav[1]
+
+    t_obs, Y_obs = t_obs[ii], Y_obs[ii]
+
+    ii =  t_wav .<= t_obs[end] .& t_wav .>= t_obs[1]
+
+    t_wav, hb, tp, sl, hs, depthb = t_wav[ii], Hb[ii], Tp[ii], sl[ii], Hs[ii], depthb[ii]
+
+    idx_obs = zeros(length(t_obs))
+
+    for i in eachindex(t_obs)
+        idx_obs[i] = findall((x)-> x == t_obs[i], t_wav)[1]
+    end
 
     ########## START HERE #############
     w = wMOORE(D50)
