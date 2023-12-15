@@ -29,6 +29,7 @@ function run_MillerDean()
 
     wavF = NCDataset(dats*"wav.nc")
     parF = NCDataset(dats*"par.nc")
+    slF = NCDataset(dats*"sl.nc")
 
     configF = NCDataset(dats*"config.nc")
 
@@ -61,6 +62,8 @@ function run_MillerDean()
     close(wavF)
     close(configF)
     close(parF)
+    close(slF)
+    
 
     println("Datasets closed...")
 
@@ -146,6 +149,7 @@ function cal_MillerDean()
     wavF = NCDataset(dats*"wav.nc")
     ensF = NCDataset(dats*"ens.nc")
     parF = NCDataset(dats*"par.nc")
+    slF = NCDataset(dats*"sl.nc")
 
     configF = NCDataset(dats*"config.nc")
 
@@ -156,6 +160,8 @@ function cal_MillerDean()
     yi = configF["yi"][:][1]
 
     brk, angBati, depth, Hberm, D50 = configF["brk"][:][1], configF["angBati"][:][1], configF["depth"][:][1], configF["Hberm"][:][1], configF["D50"][:][1]
+
+    sl = slF["sl"][:]
 
     if brk == 1
         
@@ -180,11 +186,18 @@ function cal_MillerDean()
     close(wavF)
     close(ensF)
     close(configF)
+    close(parF)
+    close(slF)
 
     println("Datasets closed...")
 
     Hs = convert(Array{Float64},Hs)
     Tp = convert(Array{Float64},Tp)
+    Hb = convert(Array{Float64},Hb)
+    depthb = convert(Array{Float64},depthb)
+    sl = convert(Array{Float64},sl)
+    Y_obs = convert(Array{Float64},Y_obs)
+    θ_b = convert(Array{Float64},θ_b)
 
     Yi = convert(Float64,yi)
 
