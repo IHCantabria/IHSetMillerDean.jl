@@ -161,6 +161,8 @@ function cal_MillerDean()
 
     brk, angBati, depth, Hberm, D50 = configF["brk"][:][1], configF["angBati"][:][1], configF["depth"][:][1], configF["Hberm"][:][1], configF["D50"][:][1]
 
+    flagP = Int(configF["flagP"][:][1])
+
     sl = slF["sl"][:]
 
     if brk == 1
