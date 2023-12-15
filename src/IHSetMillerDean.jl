@@ -4,6 +4,7 @@ using IHSetUtils
 using BlackBoxOptim
 using NCDatasets
 using Dates
+using Statistics
 export run_MillerDean, cal_MillerDean
 include("MillerDean2004.jl")
 
