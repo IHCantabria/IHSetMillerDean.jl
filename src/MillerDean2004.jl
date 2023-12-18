@@ -280,10 +280,6 @@ function cal_MillerDean()
     aMSS = 1 - sum((Ysl .- Y_obs).^2)/length(Ysl)/(var(Ysl)+var(Y_obs)+(mean(Ysl)-mean(Y_obs))^2)
     
 
-
-
-    Y_t = MileerDean(Hb, depthb, sl, Y0, dt, D50, Hberm, kero, kacr, Yi, flagP = 1, Omega = 0)
-
     println("\n\n****************Finished****************\n\n")
 
     hist["kacr"] = exp(popr[1])
@@ -293,6 +289,6 @@ function cal_MillerDean()
     hist["RMSE"] = aRMSE
     hist["MSS"] = aMSS
 
-    return Y_t, hist
+    return Ymdr, hist
     
 end
