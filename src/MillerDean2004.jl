@@ -238,6 +238,7 @@ function cal_MillerDean()
         println(mean(Ymd))
         println(mean(Y_obs))
         println(Χ[1], Χ[2], Χ[3])
+        println(MetObj)
         YYsl = Ymd[idx_obs]
         if MetObj == "Pearson"
             return 1 -  abs(sum((YYsl.-mean(YYsl)).*(Y_obs .- mean(Y_obs)))/(std(YYsl)*std(Y_obs)*length(YYsl)))
