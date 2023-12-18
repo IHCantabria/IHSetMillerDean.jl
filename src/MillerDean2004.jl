@@ -148,7 +148,7 @@ function cal_MillerDean()
 
     dt = ncread(configF, "dt")[1]
     
-    yi = ncread(configF, "yi")[1]
+    Yi = ncread(configF, "yi")[1]
 
     brk, angBati, depth, Hberm, D50 = ncread(configF, "brk")[1], ncread(configF, "angBati")[1], ncread(configF, "depth")[1], ncread(configF, "Hberm")[1], ncread(configF, "D50")[1]
 
