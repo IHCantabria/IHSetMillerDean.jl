@@ -25,7 +25,7 @@ function run_MillerDean()
     # mods = wrkDir*"\\Modules\\"
     # dats = wrkDir*"\\Data\\"
 
-    println("Loading datasets...")
+    println("Reading datasets...")
 
     wavF = NCDataset(dats*"wav.nc")
     parF = NCDataset(dats*"par.nc")
@@ -58,14 +58,7 @@ function run_MillerDean()
     else
         Hb, Tp, Hs, depthb = wavF["Hb"][:], wavF["Tp"][:], wavF["Hs"][:], wavF["hb"][:]
     end
-    
-    close(wavF)
-    close(configF)
-    close(parF)
-    close(slF)
-    
 
-    println("Datasets closed...")
 
     Hs = convert(Array{Float64},Hs)
     Tp = convert(Array{Float64},Tp)
@@ -144,32 +137,30 @@ function cal_MillerDean()
     # mods = wrkDir*"\\Modules\\"
     # dats = wrkDir*"\\Data\\"
 
-    println("Loading datasets...")
+    println("Reading datasets...")
 
-    wavF = NCDataset(dats*"wav.nc")
-    ensF = NCDataset(dats*"ens.nc")
-    parF = NCDataset(dats*"par.nc")
-    slF = NCDataset(dats*"sl.nc")
+    wavF = dats*"wav.nc"
+    ensF = dats*"ens.nc"
+    parF = dats*"par.nc"
+    slF = dats*"sl.nc"
 
-    configF = NCDataset(dats*"config.nc")
+    configF = dats*"config.nc"
 
-    println("Unpacking datasets...")
-
-    dt = configF["dt"][:][1]
+    dt = ncread(configF, "dt")[1]
     
-    yi = configF["yi"][:][1]
+    yi = ncread(configF, "yi")[1]
 
-    brk, angBati, depth, Hberm, D50 = configF["brk"][:][1], configF["angBati"][:][1], configF["depth"][:][1], configF["Hberm"][:][1], configF["D50"][:][1]
+    brk, angBati, depth, Hberm, D50 = ncread(configF, "brk")[1], ncread(configF, "angBati")[1], ncread(configF, "depth")[1], ncread(configF, "Hberm")[1], ncread(configF, "D50")[1]
 
-    flagP = Int(configF["flagP"][:][1])
+    flagP = ncread(configF, "flagP")[1]
 
-    MetObj = configF["MetObj"][:][1]
+    MetObj = ncread(configF, "MetObj")[1]
 
-    sl = slF["sl"][:]
+    sl = ncread(slF, "sl")
 
     if brk == 1
         
-        Hs, Tp, θ_w = collect(skipmissing(wavF["Hs"][:])), collect(skipmissing(wavF["Tp"][:])), collect(skipmissing(wavF["Dir"][:]))
+        Hs, Tp, θ_w = ncread(wavF, "Hs"), ncread(wavF, "Tp"), ncread(wavF, "Dir")
 
         auxAng, auxDepth = similar(Hs), similar(Hs)
         auxAng .= angBati
@@ -178,32 +169,14 @@ function cal_MillerDean()
         println("Breaking waves by linear theory...")
         Hb, θ_b, depthb = BreakingPropagation(Hs, Tp, θ_w, auxAng, auxDepth, "spectral")
     else
-        Hb, Tp, Hs, depthb = wavF["Hb"][:], wavF["Tp"][:], wavF["Hs"][:], wavF["hb"][:]
+        Hb, Tp, Hs, depthb = ncread(wavF, "Hb"), ncread(wavF, "Tp"), ncread(wavF, "Hs"), ncread(wavF, "hb")
     end
 
-    YY, MM, DD, HH = wavF["Y"][:], wavF["M"][:], wavF["D"][:], wavF["h"][:]
+    YY, MM, DD, HH = ncread(wavF, "Y"), ncread(wavF, "M"), ncread(wavF, "D"), ncread(wavF, "h")
 
-    YYo, MMo, DDo, HHo = ensF["Y"][:], ensF["M"][:], ensF["D"][:], ensF["h"][:]
+    YYo, MMo, DDo, HHo = ncread(ensF, "Y"), ncread(ensF, "M"), ncread(ensF, "D"), ncread(ensF, "h")
     
-    Y_obs = ensF["Obs"][:]
-
-    close(wavF)
-    close(ensF)
-    close(configF)
-    close(parF)
-    close(slF)
-
-    println("Datasets closed...")
-
-    Hs = convert(Array{Float64},Hs)
-    Tp = convert(Array{Float64},Tp)
-    Hb = convert(Array{Float64},Hb)
-    depthb = convert(Array{Float64},depthb)
-    sl = convert(Array{Float64},sl)
-    Y_obs = convert(Array{Float64},Y_obs)
-    θ_b = convert(Array{Float64},θ_b)
-
-    Yi = convert(Float64,yi)
+    Y_obs = ncread(ensF, "Obs")
 
     t_obs = DateTime.(YYo, MMo, DDo, HHo)
     t_wav = DateTime.(YY, MM, DD, HH)
@@ -282,7 +255,32 @@ function cal_MillerDean()
 
     println("\n\n****************Finished****************\n\n")
 
-    hist = Dict(
+    Y_atts = Dict("units" => "m",
+        "long_name" => "Shoreline position",
+        "standard_name" => "Y",
+        "data_min" => minimum(Ymdr),
+        "data_max" => maximum(Ymdr))
+    kacr_atts = Dict("units" => "-",
+        "long_name" => "Accretion coefficient",
+        "standard_name" => "kacr")
+    kero_atts = Dict("units" => "-",
+        "long_name" => "Erosion coefficient",
+        "standard_name" => "kero")
+    Y0_atts = Dict("units" => "m",
+        "long_name" => "Base position",
+        "standard_name" => "Y0")
+    RP_atts = Dict("units" => "-",
+        "long_name" => "Pearson correlation coefficient",
+        "standard_name" => "RP")
+    RMSE_atts = Dict("units" => "m",
+        "long_name" => "Root mean square error",
+        "standard_name" => "RMSE")
+    MSS_atts = Dict("units" => "-",
+        "long_name" => "Mielke Skill Score",
+        "standard_name" => "MSS")
+
+
+        "Y_"=> Ymdr,
         "kero" => exp(popr[1]),
         "kacr" => exp(popr[2]),
         "Y0" => popr[3],
@@ -290,7 +288,21 @@ function cal_MillerDean()
         "RMSE" => aRMSE,
         "MSS" => aMSS
     )
-    
-    return Ymdr, hist
+
+    nccreate("Calib_MD.nc", "Y", "Time", t_wav, atts = Y_atts)
+    ncwrite(Ymdr, "Calib_MD.nc", "Y")
+    nccreate("Calib_MD.nc", "kero", atts = kero_atts)
+    ncwrite(exp(popr[1]), "Calib_MD.nc", "kero")
+    nccreate("Calib_MD.nc", "kacr", atts = kacr_atts)
+    ncwrite(exp(popr[2]), "Calib_MD.nc", "kacr")
+    nccreate("Calib_MD.nc", "Y0", atts = Y0_atts)
+    ncwrite(popr[3], "Calib_MD.nc", "Y0")
+    nccreate("Calib_MD.nc", "RP", atts = RP_atts)
+    ncwrite(aRP, "Calib_MD.nc", "RP")
+    nccreate("Calib_MD.nc", "RMSE", atts = RMSE_atts)
+    ncwrite(aRMSE, "Calib_MD.nc", "RMSE")
+    nccreate("Calib_MD.nc", "MSS", atts = MSS_atts)
+    ncwrite(aMSS, "Calib_MD.nc", "MSS")
+        
     
 end

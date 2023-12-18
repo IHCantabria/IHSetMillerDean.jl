@@ -2,7 +2,7 @@ module IHSetMillerDean
 
 using IHSetUtils
 using BlackBoxOptim
-using NCDatasets
+using NetCDF
 using Dates
 using Statistics
 export run_MillerDean, cal_MillerDean
