@@ -235,10 +235,7 @@ function cal_MillerDean()
 
         Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Yi, flagP, Omega)
         # Ymd, _ = HM.MILLER_DEAN_CSonly(hb,hb./.78,sl,exp(Χ[1]),dt,D50,Hberm, exp(Χ[2]), exp(Χ[3]),Χ[4], flagP, Omega)
-        println(mean(Ymd))
-        println(mean(Y_obs))
-        println(Χ[1], Χ[2], Χ[3])
-        println(MetObj)
+
         YYsl = Ymd[idx_obs]
         if MetObj == "Pearson"
             return 1 -  abs(sum((YYsl.-mean(YYsl)).*(Y_obs .- mean(Y_obs)))/(std(YYsl)*std(Y_obs)*length(YYsl)))
