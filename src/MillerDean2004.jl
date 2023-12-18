@@ -279,16 +279,6 @@ function cal_MillerDean()
         "long_name" => "Mielke Skill Score",
         "standard_name" => "MSS")
 
-
-        "Y_"=> Ymdr,
-        "kero" => exp(popr[1]),
-        "kacr" => exp(popr[2]),
-        "Y0" => popr[3],
-        "RP" => aRP,
-        "RMSE" => aRMSE,
-        "MSS" => aMSS
-    )
-
     nccreate("Calib_MD.nc", "Y", "Time", t_wav, atts = Y_atts)
     ncwrite(Ymdr, "Calib_MD.nc", "Y")
     nccreate("Calib_MD.nc", "kero", atts = kero_atts)
