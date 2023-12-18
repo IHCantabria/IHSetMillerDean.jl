@@ -282,13 +282,15 @@ function cal_MillerDean()
 
     println("\n\n****************Finished****************\n\n")
 
-    hist["kacr"] = exp(popr[1])
-    hist["kero"] = exp(popr[2])
-    hist["Y0"] = popr[3]
-    hist["RP"] = aRP
-    hist["RMSE"] = aRMSE
-    hist["MSS"] = aMSS
-
+    hist = Dict(
+        "kero" => exp(popr[1]),
+        "kacr" => exp(popr[2]),
+        "Y0" => popr[3],
+        "RP" => aRP,
+        "RMSE" => aRMSE,
+        "MSS" => aMSS
+    )
+    
     return Ymdr, hist
     
 end
