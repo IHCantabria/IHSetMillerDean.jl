@@ -18,6 +18,7 @@
 
 function run_MillerDean()
 
+    
     println("Loading libraries...")
     wrkDir = pwd()
     dats = wrkDir*"/data/"
@@ -27,27 +28,27 @@ function run_MillerDean()
 
     println("Reading datasets...")
 
-    wavF = NCDataset(dats*"wav.nc")
-    parF = NCDataset(dats*"par.nc")
-    slF = NCDataset(dats*"sl.nc")
+    wavF = dats*"wav.nc"
+    parF = dats*"par.nc"
+    slF = dats*"sl.nc"
 
-    configF = NCDataset(dats*"config.nc")
+    configF = dats*"config.nc"
 
-    println("Unpacking datasets...")
-
-    dt = configF["dt"][:][1]
+    dt = ncread(configF, "dt")[1]
     
-    yi = configF["yi"][:][1]
+    Yi = ncread(configF, "Yi")[1]
 
-    kacr = parF["kacr"][:][1]
-    kero = parF["kero"][:][1]
-    Y0 = parF["Y0"][:][1]
-    
-    brk, angBati, depth, Hberm, D50 = configF["brk"][:][1], configF["angBati"][:][1], configF["depth"][:][1], configF["Hberm"][:][1], configF["D50"][:][1]
+    brk, angBati, depth, Hberm, D50 = ncread(configF, "brk")[1], ncread(configF, "angBati")[1], ncread(configF, "depth")[1], ncread(configF, "Hberm")[1], ncread(configF, "D50")[1]
+
+    flagP = ncread(configF, "flagP")[1]
+
+    MetObj = ncread(configF, "MetObj")[1]
+
+    sl = ncread(slF, "sl")
 
     if brk == 1
         
-        Hs, Tp, θ_w = collect(skipmissing(wavF["Hs"][:])), collect(skipmissing(wavF["Tp"][:])), collect(skipmissing(wavF["Dir"][:]))
+        Hs, Tp, θ_w = ncread(wavF, "Hs"), ncread(wavF, "Tp"), ncread(wavF, "Dir")
 
         auxAng, auxDepth = similar(Hs), similar(Hs)
         auxAng .= angBati
@@ -56,18 +57,16 @@ function run_MillerDean()
         println("Breaking waves by linear theory...")
         Hb, θ_b, depthb = BreakingPropagation(Hs, Tp, θ_w, auxAng, auxDepth, "spectral")
     else
-        Hb, Tp, Hs, depthb = wavF["Hb"][:], wavF["Tp"][:], wavF["Hs"][:], wavF["hb"][:]
+        Hb, Tp, Hs, depthb = ncread(wavF, "Hb"), ncread(wavF, "Tp"), ncread(wavF, "Hs"), ncread(wavF, "hb")
     end
 
+    YY, MM, DD, HH = ncread(wavF, "Y"), ncread(wavF, "M"), ncread(wavF, "D"), ncread(wavF, "h")
 
-    Hs = convert(Array{Float64},Hs)
-    Tp = convert(Array{Float64},Tp)
+    t_wav = DateTime.(YY, MM, DD, HH)
 
-    kacr = convert(Array{Float64},kacr)
-    kero = convert(Array{Float64},kero)
-    Y0 = convert(Array{Float64},Y0)
-
-    Yi = convert(Array{Float64},yi)
+    kacr = ncread(parF, "kacr")
+    kero = ncread(parF, "kero")
+    Y0 = ncread(parF, "Y0")
 
     ########## START HERE #############
     w = wMOORE(D50)
@@ -84,49 +83,6 @@ function run_MillerDean()
     return Y_t
     
 end
-
-
-function MileerDean(Hb, depthb, sl, Y0, dt, D50, Hberm, kero, kacr, Yi, flagP = 1, Omega = 0)
-    if flagP == 1
-        kero = fill(kero, length(Hb))
-        kacr = fill(kacr, length(Hb))
-    elseif flagP == 2
-        kero = kero .* Hb .^ 2
-        kacr = kacr .* Hb .^ 2
-    elseif flagP == 3
-        kero = kero .* Hb .^ 3
-        kacr = kacr .* Hb .^ 3
-    elseif flagP == 4
-        kero = kero .* Omega
-        kacr = kacr .* Omega
-    end
-
-    yeq = similar(Hb)
-    Y = similar(Hb)
-    wl = 0.106 .* Hb .+ sl
-    Wast = wast(depthb, D50)
-    yeq .= Y0 .- Wast .* wl ./ (Hberm .+ depthb)
-    acr_count = 0
-    ero_count = 0
-
-    for i in eachindex(sl)
-        if i == 1
-            r = yeq[i] .- Y[i] > 0
-            k = kacr[i] * r + kero[i] * !r
-            Y[i] = Yi
-        else
-            r = yeq[i] .- Y[i-1] > 0
-            k = kacr[i] * r + kero[i] * !r
-            A = k .* dt .* 0.5
-            Y[i] = (Y[i-1] + A .* (yeq[i] + yeq[i-1] - Y[i-1])) ./ (1 + A)
-        end
-        acr_count = acr_count + r
-        ero_count = ero_count + !r
-    end
-
-    return Y
-end
-
 
 function cal_MillerDean()
 
@@ -231,8 +187,8 @@ function cal_MillerDean()
                         # Method = :simultaneous_perturbation_stochastic_approximation,
                         SearchRange = boundsr,
                         NumDimensions = 3,
-                        PopulationSize = 5000,
-                        MaxSteps = 100000,
+                        PopulationSize = 500,
+                        MaxSteps = 1000,
                         FitnessTolerance = 1e-6,
                         FitnessScheme=ParetoFitnessScheme{2}(is_minimizing=true),
                         TraceMode=:compact,
@@ -252,7 +208,6 @@ function cal_MillerDean()
     aRMSE = sqrt(mean((Ysl .- Y_obs).^2))
     aMSS = 1 - sum((Ysl .- Y_obs).^2)/length(Ysl)/(var(Ysl)+var(Y_obs)+(mean(Ysl)-mean(Y_obs))^2)
     
-
     println("\n\n****************Finished****************\n\n")
 
     Y_atts = Dict("units" => "m",
@@ -278,21 +233,100 @@ function cal_MillerDean()
     MSS_atts = Dict("units" => "-",
         "long_name" => "Mielke Skill Score",
         "standard_name" => "MSS")
+    year_atts = Dict("long_name" => "Year")
+    month_atts = Dict("long_name" => "Month")
+    day_atts = Dict("long_name" => "Day")
+    hour_atts = Dict("long_name" => "Hour")
 
-    nccreate("Calib_MD.nc", "Y", atts = Y_atts)
-    ncwrite(Ymdr, "Calib_MD.nc", "Y")
-    nccreate("Calib_MD.nc", "kero", atts = kero_atts)
-    ncwrite(exp(popr[1]), "Calib_MD.nc", "kero")
-    nccreate("Calib_MD.nc", "kacr", atts = kacr_atts)
-    ncwrite(exp(popr[2]), "Calib_MD.nc", "kacr")
-    nccreate("Calib_MD.nc", "Y0", atts = Y0_atts)
-    ncwrite(popr[3], "Calib_MD.nc", "Y0")
-    nccreate("Calib_MD.nc", "RP", atts = RP_atts)
-    ncwrite(aRP, "Calib_MD.nc", "RP")
-    nccreate("Calib_MD.nc", "RMSE", atts = RMSE_atts)
-    ncwrite(aRMSE, "Calib_MD.nc", "RMSE")
-    nccreate("Calib_MD.nc", "MSS", atts = MSS_atts)
-    ncwrite(aMSS, "Calib_MD.nc", "MSS")
-        
-    
+    println("Writing output...")
+
+    nccreate("Shoreline_MD.nc", "year",
+             "dim", length(YY),
+             atts = year_atts)
+    ncwrite(YY, "Shoreline_MD.nc", "year")
+    nccreate("Shoreline_MD.nc", "month",
+             "dim", length(MM),
+             atts = month_atts)
+    ncwrite(MM, "Shoreline_MD.nc", "month")
+    nccreate("Shoreline_MD.nc", "day",
+             "dim", length(DD),
+             atts = day_atts)
+    ncwrite(DD, "Shoreline_MD.nc", "day")
+    nccreate("Shoreline_MD.nc", "hour",
+             "dim", length(HH),
+             atts = hour_atts)
+    ncwrite(HH, "Shoreline_MD.nc", "hour")    
+    nccreate("Shoreline_MD.nc", "kacr",
+             "len", 1,
+             atts = kacr_atts)
+    ncwrite([exp(popr[1])], "Shoreline_MD.nc", "kacr")
+    nccreate("Shoreline_MD.nc", "kero",
+             "len", 1,
+             atts = kero_atts)
+    ncwrite([exp(popr[2])], "Shoreline_MD.nc", "kero")
+    nccreate("Shoreline_MD.nc", "Y0",
+             "len", 1,
+             atts = Y0_atts)
+    ncwrite([popr[3]], "Shoreline_MD.nc", "Y0")
+    nccreate("Shoreline_MD.nc", "RP",
+             "len", 1,
+             atts = RP_atts)
+    ncwrite([aRP], "Shoreline_MD.nc", "RP")
+    nccreate("Shoreline_MD.nc", "RMSE",
+             "len", 1,
+             atts = RMSE_atts)
+    ncwrite([aRMSE], "Shoreline_MD.nc", "RMSE")
+    nccreate("Shoreline_MD.nc", "MSS",
+             "len", 1,
+             atts = MSS_atts)
+    ncwrite([aMSS], "Shoreline_MD.nc", "MSS")
+
+    nccreate("Shoreline_MD.nc", "Y",
+             "dim", length(Ymdr),
+             atts = Y_atts)
+    ncwrite(Ymdr, "Shoreline_MD.nc", "Y")
+
 end
+
+function MileerDean(Hb, depthb, sl, Y0, dt, D50, Hberm, kero, kacr, Yi, flagP = 1, Omega = 0)
+    if flagP == 1
+        kero = fill(kero, length(Hb))
+        kacr = fill(kacr, length(Hb))
+    elseif flagP == 2
+        kero = kero .* Hb .^ 2
+        kacr = kacr .* Hb .^ 2
+    elseif flagP == 3
+        kero = kero .* Hb .^ 3
+        kacr = kacr .* Hb .^ 3
+    elseif flagP == 4
+        kero = kero .* Omega
+        kacr = kacr .* Omega
+    end
+
+    yeq = zeros(length(Hb))
+    Y = zeros(length(Hb))
+    wl = 0.106 .* Hb .+ sl
+    Wast = wast(depthb, D50)
+    yeq .= Y0 .- Wast .* wl ./ (Hberm .+ depthb)
+    acr_count = 0
+    ero_count = 0
+
+    for i in eachindex(sl)
+        if i == 1
+            r = yeq[i] .- Y[i] > 0
+            k = kacr[i] * r + kero[i] * !r
+            Y[i] = Yi
+        else
+            r = yeq[i] .- Y[i-1] > 0
+            k = kacr[i] * r + kero[i] * !r
+            A = k .* dt .* 0.5
+            Y[i] = (Y[i-1] + A .* (yeq[i] + yeq[i-1] - Y[i-1])) ./ (1 + A)
+        end
+        acr_count = acr_count + r
+        ero_count = ero_count + !r
+    end
+
+    return Y
+end
+
+
