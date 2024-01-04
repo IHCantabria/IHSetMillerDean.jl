@@ -298,7 +298,7 @@ function cal_MillerDean()
         nccreate(output, "Y_flagP="*string(i),
                     "dim", length(Ymdr[string(i)]),
                     atts = Y_atts)
-        ncwrite(Ymdr[string(i)], output, "Y_flagp="*string(i))
+        ncwrite(Ymdr[string(i)], output, "Y_flagP="*string(i))
     end
 
 end
