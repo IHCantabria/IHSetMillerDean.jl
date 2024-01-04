@@ -240,51 +240,52 @@ function cal_MillerDean()
 
     println("Writing output...")
 
-    nccreate("Shoreline_MD.nc", "year",
+    output = wrkDir*"/results/Shoreline_MD.nc"
+    nccreate(output, "year",
              "dim", length(YY),
              atts = year_atts)
-    ncwrite(YY, "Shoreline_MD.nc", "year")
-    nccreate("Shoreline_MD.nc", "month",
+    ncwrite(YY, output, "year")
+    nccreate(output, "month",
              "dim", length(MM),
              atts = month_atts)
-    ncwrite(MM, "Shoreline_MD.nc", "month")
-    nccreate("Shoreline_MD.nc", "day",
+    ncwrite(MM, output, "month")
+    nccreate(output, "day",
              "dim", length(DD),
              atts = day_atts)
-    ncwrite(DD, "Shoreline_MD.nc", "day")
-    nccreate("Shoreline_MD.nc", "hour",
+    ncwrite(DD, output, "day")
+    nccreate(output, "hour",
              "dim", length(HH),
              atts = hour_atts)
-    ncwrite(HH, "Shoreline_MD.nc", "hour")    
-    nccreate("Shoreline_MD.nc", "kacr",
+    ncwrite(HH, output, "hour")    
+    nccreate(output, "kacr",
              "len", 1,
              atts = kacr_atts)
-    ncwrite([exp(popr[1])], "Shoreline_MD.nc", "kacr")
-    nccreate("Shoreline_MD.nc", "kero",
+    ncwrite([exp(popr[1])], output, "kacr")
+    nccreate(output, "kero",
              "len", 1,
              atts = kero_atts)
-    ncwrite([exp(popr[2])], "Shoreline_MD.nc", "kero")
-    nccreate("Shoreline_MD.nc", "Y0",
+    ncwrite([exp(popr[2])], output, "kero")
+    nccreate(output, "Y0",
              "len", 1,
              atts = Y0_atts)
-    ncwrite([popr[3]], "Shoreline_MD.nc", "Y0")
-    nccreate("Shoreline_MD.nc", "RP",
+    ncwrite([popr[3]], output, "Y0")
+    nccreate(output, "RP",
              "len", 1,
              atts = RP_atts)
-    ncwrite([aRP], "Shoreline_MD.nc", "RP")
-    nccreate("Shoreline_MD.nc", "RMSE",
+    ncwrite([aRP], output, "RP")
+    nccreate(output, "RMSE",
              "len", 1,
              atts = RMSE_atts)
-    ncwrite([aRMSE], "Shoreline_MD.nc", "RMSE")
-    nccreate("Shoreline_MD.nc", "MSS",
+    ncwrite([aRMSE], output, "RMSE")
+    nccreate(output, "MSS",
              "len", 1,
              atts = MSS_atts)
-    ncwrite([aMSS], "Shoreline_MD.nc", "MSS")
+    ncwrite([aMSS], output, "MSS")
 
-    nccreate("Shoreline_MD.nc", "Y",
+    nccreate(output, "Y",
              "dim", length(Ymdr),
              atts = Y_atts)
-    ncwrite(Ymdr, wrkDir*"/results/Shoreline_MD.nc", "Y")
+    ncwrite(Ymdr, output, "Y")
 
 end
 
