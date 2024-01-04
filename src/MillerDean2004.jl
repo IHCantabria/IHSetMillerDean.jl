@@ -191,8 +191,8 @@ function cal_MillerDean()
 
         boundsr = [(log(1e-7), log(1e-1)),
                    (log(1e-7), log(1e-1)),
-                   (0.9*minimum(Y_obs), 1.5*maximum(Y_obs)),
-                   (0.9*minimum(Y_obs), 1.5*maximum(Y_obs))] 
+                   (0.25*minimum(Y_obs), 2*maximum(Y_obs)),
+                   (0.25*minimum(Y_obs), 2*maximum(Y_obs))] 
 
         if MetObj == "Double"
             resr = bboptimize(Calibra_MDr; 
