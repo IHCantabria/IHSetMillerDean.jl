@@ -284,7 +284,7 @@ function cal_MillerDean()
     nccreate("Shoreline_MD.nc", "Y",
              "dim", length(Ymdr),
              atts = Y_atts)
-    ncwrite(Ymdr, "Shoreline_MD.nc", "Y")
+    ncwrite(Ymdr, wrkDir*"/results/Shoreline_MD.nc", "Y")
 
 end
 
