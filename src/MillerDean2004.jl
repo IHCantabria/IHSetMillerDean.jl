@@ -36,7 +36,6 @@ function run_MillerDean()
 
     dt = ncread(configF, "dt")[1]
     
-    Yi = ncread(configF, "Yi")[1]
 
     brk, angBati, depth, Hberm, D50 = ncread(configF, "brk")[1], ncread(configF, "angBati")[1], ncread(configF, "depth")[1], ncread(configF, "Hberm")[1], ncread(configF, "D50")[1]
 
@@ -103,8 +102,6 @@ function cal_MillerDean()
     configF = dats*"config.nc"
 
     dt = ncread(configF, "dt")[1]
-    
-    Yi = ncread(configF, "Yi")[1]
 
     brk, angBati, depth, Hberm, D50 = ncread(configF, "brk")[1], ncread(configF, "angBati")[1], ncread(configF, "depth")[1], ncread(configF, "Hberm")[1], ncread(configF, "D50")[1]
 
@@ -162,8 +159,7 @@ function cal_MillerDean()
 
     function Calibra_MDr(Χ)
 
-        Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Yi, flagP, Omega)
-        # Ymd, _ = HM.MILLER_DEAN_CSonly(hb,hb./.78,sl,exp(Χ[1]),dt,D50,Hberm, exp(Χ[2]), exp(Χ[3]),Χ[4], flagP, Omega)
+        Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Χ[4], flagP, Omega)
 
         YYsl = Ymd[idx_obs]
         if MetObj == "Pearson"
@@ -181,12 +177,13 @@ function cal_MillerDean()
     
     boundsr = [(log(1e-7), log(1e-1)),
                (log(1e-7), log(1e-1)),
+               (minimum(Y_obs), maximum(Y_obs)),
                (minimum(Y_obs), maximum(Y_obs))] 
     
     resr = bboptimize(Calibra_MDr; 
                         # Method = :simultaneous_perturbation_stochastic_approximation,
                         SearchRange = boundsr,
-                        NumDimensions = 3,
+                        NumDimensions = 4,
                         PopulationSize = 5000,
                         MaxSteps = 5000,
                         FitnessTolerance = 1e-6,
@@ -201,7 +198,7 @@ function cal_MillerDean()
     objr = best_fitness(resr)
     popr = best_candidate(resr)
     
-    Ymdr = MileerDean(Hb, depthb, sl, popr[3], dt, D50, Hberm, exp(popr[1]), exp(popr[2]), Yi, flagP, Omega)
+    Ymdr = MileerDean(Hb, depthb, sl, popr[3], dt, D50, Hberm, exp(popr[1]), exp(popr[2]), popr[4], flagP, Omega)
     
     Ysl = Ymdr[idx_obs]
     aRP = sum((Ysl.-mean(Ysl)).*(Y_obs .- mean(Y_obs)))/(std(Ysl)*std(Y_obs)*length(Ysl))
