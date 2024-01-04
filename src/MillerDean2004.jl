@@ -186,6 +186,8 @@ function cal_MillerDean()
                 return (sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2), abs(sqrt(mean((YYsl .- Y_obs).^2))/5))
             elseif MetObj == "Triple"
                 return (sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2), abs(sqrt(mean((YYsl .- Y_obs).^2))/5), 1 -  abs(sum((YYsl.-mean(YYsl)).*(Y_obs .- mean(Y_obs)))/(std(YYsl)*std(Y_obs)*length(YYsl))))
+            elseif MetObj == "Double2"
+                return (sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2), 1 -  abs(sum((YYsl.-mean(YYsl)).*(Y_obs .- mean(Y_obs)))/(std(YYsl)*std(Y_obs)*length(YYsl))))
             end
         end
 
@@ -194,7 +196,7 @@ function cal_MillerDean()
                    (0.25*minimum(Y_obs), 2*maximum(Y_obs)),
                    (0.25*minimum(Y_obs), 2*maximum(Y_obs))] 
 
-        if MetObj == "Double"
+        if MetObj == "Double" || MetObj == "Double2"
             resr = bboptimize(Calibra_MDr; 
                             # Method = :simultaneous_perturbation_stochastic_approximation,
                             SearchRange = boundsr,
