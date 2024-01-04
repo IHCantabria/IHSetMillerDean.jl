@@ -187,9 +187,9 @@ function cal_MillerDean()
             end
         end
 
-        boundsr = [(log(1e-7), log(1e-1)),
-                    (log(1e-7), log(1e-1)),
-                    (minimum(Y_obs), maximum(Y_obs))] 
+        boundsr = [(log(1e-6), log(1e-1)),
+                    (log(1e-6), log(1e-1)),
+                    (0.9*minimum(Y_obs), 1.5*maximum(Y_obs))] 
 
         resr = bboptimize(Calibra_MDr; 
                             # Method = :simultaneous_perturbation_stochastic_approximation,
