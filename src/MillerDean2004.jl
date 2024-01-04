@@ -211,7 +211,7 @@ function cal_MillerDean()
         objr[string(i)] = best_fitness(resr)
         popr[string(i)] = best_candidate(resr)
 
-        Ymdr[string(i)] = MileerDean(Hb, depthb, sl, popr[3], dt, D50, Hberm, exp(popr[1]), exp(popr[2]), popr[4], flagP[i], Omega)
+        Ymdr[string(i)] = MileerDean(Hb, depthb, sl, popr[string(i)][3], dt, D50, Hberm, exp(popr[string(i)][1]), exp(popr[string(i)][2]), popr[string(i)][4], flagP[i], Omega)
 
         Ysl = Ymdr[string(i)][idx_obs]
         aRP[string(i)] = sum((Ysl.-mean(Ysl)).*(Y_obs .- mean(Y_obs)))/(std(Ysl)*std(Y_obs)*length(Ysl))
