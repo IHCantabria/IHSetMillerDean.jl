@@ -187,8 +187,8 @@ function cal_MillerDean()
             end
         end
 
-        boundsr = [(log(1e-6), log(1e-1)),
-                   (log(1e-6), log(1e-1)),
+        boundsr = [(log(1e-7), log(1e-1)),
+                   (log(1e-7), log(1e-1)),
                    (0.9*minimum(Y_obs), 1.5*maximum(Y_obs)),
                    (0.9*minimum(Y_obs), 1.5*maximum(Y_obs))] 
 
@@ -208,7 +208,7 @@ function cal_MillerDean()
                             Method=:borg_moea)            
         else
             resr = bboptimize(Calibra_MDr; 
-                            Method = :de_rand_1_bin_radiuslimited,
+                            Method = :adaptive_de_rand_1_bin,
                             SearchRange = boundsr,
                             NumDimensions = 4,
                             PopulationSize = 5000,
