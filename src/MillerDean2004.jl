@@ -198,7 +198,7 @@ function cal_MillerDean()
                    (0.25*minimum(Y_obs), 2*maximum(Y_obs)),
                    (0.25*minimum(Y_obs), 2*maximum(Y_obs))] 
 
-        if MetObj == "Double" || MetObj == "Double2"
+        if MetObj == "Double" || MetObj == "Double2" || MetObj == "Double3"
             resr = bboptimize(Calibra_MDr; 
                             # Method = :simultaneous_perturbation_stochastic_approximation,
                             SearchRange = boundsr,
