@@ -105,7 +105,11 @@ function cal_MillerDean()
 
     brk, angBati, depth, Hberm, D50 = ncread(configF, "brk")[1], ncread(configF, "angBati")[1], ncread(configF, "depth")[1], ncread(configF, "Hberm")[1], ncread(configF, "D50")[1]
 
-    flagP = ncread(configF, "flagP")[1]
+    if length(ncread(configF, "flagP")) == 1
+        flagP = ncread(configF, "flagP")[1]
+    else
+        flagP = ncread(configF, "flagP")
+    end
 
     MetObj = ncread(configF, "MetObj")[1]
 
@@ -157,132 +161,145 @@ function cal_MillerDean()
 
     println("Starting Miller and Dean (2004) - Shoreline Evolution Model...")
 
-    function Calibra_MDr(Χ)
+    Ymdr = Dict()
+    aRP = Dict()
+    aRMSE = Dict()
+    aMSS = Dict()
+    popr = Dict()
+    objr = Dict()
+    
+    for i in eachindex(flagP)
+            
+        function Calibra_MDr(Χ)
 
-        Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Χ[4], flagP, Omega)
+            Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Χ[4], flagP[i], Omega)
 
-        YYsl = Ymd[idx_obs]
-        if MetObj == "Pearson"
-            return 1 -  abs(sum((YYsl.-mean(YYsl)).*(Y_obs .- mean(Y_obs)))/(std(YYsl)*std(Y_obs)*length(YYsl)))
-        elseif MetObj == "RMSE"
-            return abs(sqrt(mean((YYsl .- Y_obs).^2)))
-        elseif MetObj == "MSS"
-            return sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2)
-        elseif MetObj == "BSS"
-            return (mean((YYsl .- Y_obs).^2) - mean((YYref .- Y_obs).^2))/mean((YYref .- Y_obs).^2)
-        elseif MetObj == "Double"
-            return (sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2), abs(sqrt(mean((YYsl .- Y_obs).^2))))
+            YYsl = Ymd[idx_obs]
+            if MetObj == "Pearson"
+                return 1 -  abs(sum((YYsl.-mean(YYsl)).*(Y_obs .- mean(Y_obs)))/(std(YYsl)*std(Y_obs)*length(YYsl)))
+            elseif MetObj == "RMSE"
+                return abs(sqrt(mean((YYsl .- Y_obs).^2)))
+            elseif MetObj == "MSS"
+                return sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2)
+            elseif MetObj == "BSS"
+                return (mean((YYsl .- Y_obs).^2) - mean((YYref .- Y_obs).^2))/mean((YYref .- Y_obs).^2)
+            elseif MetObj == "Double"
+                return (sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2), abs(sqrt(mean((YYsl .- Y_obs).^2))))
+            end
         end
+
+        boundsr = [(log(1e-7), log(1e-1)),
+                    (log(1e-7), log(1e-1)),
+                    (minimum(Y_obs), maximum(Y_obs)),
+                    (minimum(Y_obs), maximum(Y_obs))] 
+
+        resr = bboptimize(Calibra_MDr; 
+                            # Method = :simultaneous_perturbation_stochastic_approximation,
+                            SearchRange = boundsr,
+                            NumDimensions = 4,
+                            PopulationSize = 5000,
+                            MaxSteps = 5000,
+                            FitnessTolerance = 1e-6,
+                            FitnessScheme=ParetoFitnessScheme{2}(is_minimizing=true),
+                            TraceMode=:compact,
+                            ϵ=0.01,
+                            τ = 0.25,
+                            MaxStepsWithoutEpsProgress = 20000,
+                            TargetFitness=(1, 0.1),
+                            Method=:borg_moea)
+
+        objr[string(i)] = best_fitness(resr)
+        popr[string(i)] = best_candidate(resr)
+
+        Ymdr[string(i)] = MileerDean(Hb, depthb, sl, popr[3], dt, D50, Hberm, exp(popr[1]), exp(popr[2]), popr[4], flagP[i], Omega)
+
+        Ysl = Ymdr[string(i)][idx_obs]
+        aRP[string(i)] = sum((Ysl.-mean(Ysl)).*(Y_obs .- mean(Y_obs)))/(std(Ysl)*std(Y_obs)*length(Ysl))
+        aRMSE[string(i)] = sqrt(mean((Ysl .- Y_obs).^2))
+        aMSS[string(i)] = 1 - sum((Ysl .- Y_obs).^2)/length(Ysl)/(var(Ysl)+var(Y_obs)+(mean(Ysl)-mean(Y_obs))^2)
+
     end
-    
-    boundsr = [(log(1e-7), log(1e-1)),
-               (log(1e-7), log(1e-1)),
-               (minimum(Y_obs), maximum(Y_obs)),
-               (minimum(Y_obs), maximum(Y_obs))] 
-    
-    resr = bboptimize(Calibra_MDr; 
-                        # Method = :simultaneous_perturbation_stochastic_approximation,
-                        SearchRange = boundsr,
-                        NumDimensions = 4,
-                        PopulationSize = 5000,
-                        MaxSteps = 5000,
-                        FitnessTolerance = 1e-6,
-                        FitnessScheme=ParetoFitnessScheme{2}(is_minimizing=true),
-                        TraceMode=:compact,
-                        ϵ=0.01,
-                        τ = 0.25,
-                        MaxStepsWithoutEpsProgress = 20000,
-                        TargetFitness=(1, 0.1),
-                        Method=:borg_moea)
-    
-    objr = best_fitness(resr)
-    popr = best_candidate(resr)
-    
-    Ymdr = MileerDean(Hb, depthb, sl, popr[3], dt, D50, Hberm, exp(popr[1]), exp(popr[2]), popr[4], flagP, Omega)
-    
-    Ysl = Ymdr[idx_obs]
-    aRP = sum((Ysl.-mean(Ysl)).*(Y_obs .- mean(Y_obs)))/(std(Ysl)*std(Y_obs)*length(Ysl))
-    aRMSE = sqrt(mean((Ysl .- Y_obs).^2))
-    aMSS = 1 - sum((Ysl .- Y_obs).^2)/length(Ysl)/(var(Ysl)+var(Y_obs)+(mean(Ysl)-mean(Y_obs))^2)
-    
     println("\n\n****************Finished****************\n\n")
 
-    Y_atts = Dict("units" => "m",
-        "long_name" => "Shoreline position",
-        "standard_name" => "Y",
-        "data_min" => minimum(Ymdr),
-        "data_max" => maximum(Ymdr))
-    kacr_atts = Dict("units" => "-",
-        "long_name" => "Accretion coefficient",
-        "standard_name" => "kacr")
-    kero_atts = Dict("units" => "-",
-        "long_name" => "Erosion coefficient",
-        "standard_name" => "kero")
-    Y0_atts = Dict("units" => "m",
-        "long_name" => "Base position",
-        "standard_name" => "Y0")
-    RP_atts = Dict("units" => "-",
-        "long_name" => "Pearson correlation coefficient",
-        "standard_name" => "RP")
-    RMSE_atts = Dict("units" => "m",
-        "long_name" => "Root mean square error",
-        "standard_name" => "RMSE")
-    MSS_atts = Dict("units" => "-",
-        "long_name" => "Mielke Skill Score",
-        "standard_name" => "MSS")
     year_atts = Dict("long_name" => "Year")
     month_atts = Dict("long_name" => "Month")
     day_atts = Dict("long_name" => "Day")
     hour_atts = Dict("long_name" => "Hour")
-
     println("Writing output...")
 
     output = wrkDir*"/results/Shoreline_MD.nc"
     nccreate(output, "year",
-             "dim", length(YY),
-             atts = year_atts)
+                "dim", length(YY),
+                atts = year_atts)
     ncwrite(YY, output, "year")
     nccreate(output, "month",
-             "dim", length(MM),
-             atts = month_atts)
+                "dim", length(MM),
+                atts = month_atts)
     ncwrite(MM, output, "month")
     nccreate(output, "day",
-             "dim", length(DD),
-             atts = day_atts)
+                "dim", length(DD),
+                atts = day_atts)
     ncwrite(DD, output, "day")
     nccreate(output, "hour",
-             "dim", length(HH),
-             atts = hour_atts)
-    ncwrite(HH, output, "hour")    
-    nccreate(output, "kacr",
-             "len", 1,
-             atts = kacr_atts)
-    ncwrite([exp(popr[1])], output, "kacr")
-    nccreate(output, "kero",
-             "len", 1,
-             atts = kero_atts)
-    ncwrite([exp(popr[2])], output, "kero")
-    nccreate(output, "Y0",
-             "len", 1,
-             atts = Y0_atts)
-    ncwrite([popr[3]], output, "Y0")
-    nccreate(output, "RP",
-             "len", 1,
-             atts = RP_atts)
-    ncwrite([aRP], output, "RP")
-    nccreate(output, "RMSE",
-             "len", 1,
-             atts = RMSE_atts)
-    ncwrite([aRMSE], output, "RMSE")
-    nccreate(output, "MSS",
-             "len", 1,
-             atts = MSS_atts)
-    ncwrite([aMSS], output, "MSS")
+                "dim", length(HH),
+                atts = hour_atts)
+    ncwrite(HH, output, "hour")  
 
-    nccreate(output, "Y",
-             "dim", length(Ymdr),
-             atts = Y_atts)
-    ncwrite(Ymdr, output, "Y")
+    Y_atts = Dict("units" => "m",
+            "long_name" => "Shoreline position",
+            "standard_name" => "Y")
+        kacr_atts = Dict("units" => "-",
+            "long_name" => "Accretion coefficient",
+            "standard_name" => "kacr")
+        kero_atts = Dict("units" => "-",
+            "long_name" => "Erosion coefficient",
+            "standard_name" => "kero")
+        Y0_atts = Dict("units" => "m",
+            "long_name" => "Base position",
+            "standard_name" => "Y0")
+        RP_atts = Dict("units" => "-",
+            "long_name" => "Pearson correlation coefficient",
+            "standard_name" => "RP")
+        RMSE_atts = Dict("units" => "m",
+            "long_name" => "Root mean square error",
+            "standard_name" => "RMSE")
+        MSS_atts = Dict("units" => "-",
+            "long_name" => "Mielke Skill Score",
+            "standard_name" => "MSS")
+
+    for i in eachindex(flagP)
+        
+          
+        nccreate(output, "kacr_flagP="*string(i),
+                    "len", 1,
+                    atts = kacr_atts)
+        ncwrite([exp(popr[string(i)][1])], output, "kacr_flagP="*string(i))
+        nccreate(output, "kero_flagP="*string(i),
+                    "len", 1,
+                    atts = kero_atts)
+        ncwrite([exp(popr[string(i)][2])], output, "kero_flagP="*string(i))
+        nccreate(output, "Y0_flagP="*string(i),
+                    "len", 1,
+                    atts = Y0_atts)
+        ncwrite([popr[string(i)][3]], output, "Y0_flagP="*string(i))
+        nccreate(output, "RP_flagP="*string(i),
+                    "len", 1,
+                    atts = RP_atts)
+        ncwrite([aRP[string(i)]], output, "RP_flagP="*string(i))
+        nccreate(output, "RMSE_flagP="*string(i),
+                    "len", 1,
+                    atts = RMSE_atts)
+        ncwrite([aRMSE[string(i)]], output, "RMSE_flagP="*string(i))
+        nccreate(output, "MSS_flagP="*string(i),
+                    "len", 1,
+                    atts = MSS_atts)
+        ncwrite([aMSS[string(i)]], output, "MSS_flagP="*string(i))
+
+        nccreate(output, "Y_flagP="*string(i),
+                    "dim", length(Ymdr[string(i)]),
+                    atts = Y_atts)
+        ncwrite(Ymdr[string(i)], output, "Y_flagp="*string(i))
+    end
 
 end
 
