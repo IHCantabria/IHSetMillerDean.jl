@@ -177,13 +177,13 @@ function cal_MillerDean()
             if MetObj == "Pearson"
                 return 1 -  abs(sum((YYsl.-mean(YYsl)).*(Y_obs .- mean(Y_obs)))/(std(YYsl)*std(Y_obs)*length(YYsl)))
             elseif MetObj == "RMSE"
-                return abs(sqrt(mean((YYsl .- Y_obs).^2)))
+                return abs(sqrt(mean((YYsl .- Y_obs).^2))/5)
             elseif MetObj == "MSS"
                 return sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2)
             elseif MetObj == "BSS"
                 return (mean((YYsl .- Y_obs).^2) - mean((YYref .- Y_obs).^2))/mean((YYref .- Y_obs).^2)
             elseif MetObj == "Double"
-                return (sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2), abs(sqrt(mean((YYsl .- Y_obs).^2))))
+                return (sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2), abs(sqrt(mean((YYsl .- Y_obs).^2))/5))
             end
         end
 
@@ -197,27 +197,27 @@ function cal_MillerDean()
                             # Method = :simultaneous_perturbation_stochastic_approximation,
                             SearchRange = boundsr,
                             NumDimensions = 4,
-                            PopulationSize = 5000,
+                            PopulationSize = 500,
                             MaxSteps = 5000,
                             FitnessTolerance = 1e-6,
                             FitnessScheme=ParetoFitnessScheme{2}(is_minimizing=true),
                             TraceMode=:compact,
                             ϵ=0.01,
                             τ = 0.25,
-                            MaxStepsWithoutEpsProgress = 20000,
+                            MaxStepsWithoutEpsProgress = 10000,
                             Method=:borg_moea)            
         else
             resr = bboptimize(Calibra_MDr; 
                             Method = :adaptive_de_rand_1_bin,
                             SearchRange = boundsr,
                             NumDimensions = 4,
-                            PopulationSize = 5000,
+                            PopulationSize = 500,
                             MaxSteps = 5000,
                             FitnessTolerance = 1e-6,
                             TraceMode=:compact,
                             ϵ=0.01,
                             τ = 0.25,
-                            MaxStepsWithoutEpsProgress = 20000)
+                            MaxStepsWithoutEpsProgress = 10000)
         end
 
 
@@ -351,8 +351,7 @@ function MileerDean(Hb, depthb, sl, Y0, dt, D50, Hberm, kero, kacr, Yi, flagP = 
             A = k .* dt .* 0.5
             Y[i] = (Y[i-1] + A .* (yeq[i] + yeq[i-1] - Y[i-1])) ./ (1 + A)
         end
-        acr_count = acr_count + r
-        ero_count = ero_count + !r
+
     end
 
     return Y
