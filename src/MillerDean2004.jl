@@ -191,7 +191,8 @@ function cal_MillerDean()
                     (log(1e-6), log(1e-1)),
                     (0.9*minimum(Y_obs), 1.5*maximum(Y_obs))] 
 
-        resr = bboptimize(Calibra_MDr; 
+        if MetObj == "Double"
+            resr = bboptimize(Calibra_MDr; 
                             # Method = :simultaneous_perturbation_stochastic_approximation,
                             SearchRange = boundsr,
                             NumDimensions = 3,
@@ -204,7 +205,23 @@ function cal_MillerDean()
                             τ = 0.25,
                             MaxStepsWithoutEpsProgress = 20000,
                             TargetFitness=(1, 0.1),
-                            Method=:borg_moea)
+                            Method=:borg_moea)            
+        else
+            resr = bboptimize(Calibra_MDr; 
+                            Method = :simultaneous_perturbation_stochastic_approximation,
+                            SearchRange = boundsr,
+                            NumDimensions = 3,
+                            PopulationSize = 5000,
+                            MaxSteps = 5000,
+                            FitnessTolerance = 1e-6,
+                            TraceMode=:compact,
+                            ϵ=0.01,
+                            τ = 0.25,
+                            MaxStepsWithoutEpsProgress = 20000)
+        end
+
+
+        
 
         objr[string(i)] = best_fitness(resr)
         popr[string(i)] = best_candidate(resr)
