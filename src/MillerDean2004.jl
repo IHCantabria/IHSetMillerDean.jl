@@ -184,6 +184,8 @@ function cal_MillerDean()
                 return (mean((YYsl .- Y_obs).^2) - mean((YYref .- Y_obs).^2))/mean((YYref .- Y_obs).^2)
             elseif MetObj == "Double"
                 return (sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2), abs(sqrt(mean((YYsl .- Y_obs).^2))/5))
+            elseif MetObj == "Triple"
+                return (sum((YYsl .- Y_obs).^2)/length(YYsl)/(var(YYsl)+var(Y_obs)+(mean(YYsl)-mean(Y_obs))^2), abs(sqrt(mean((YYsl .- Y_obs).^2))/5), 1 -  abs(sum((YYsl.-mean(YYsl)).*(Y_obs .- mean(Y_obs)))/(std(YYsl)*std(Y_obs)*length(YYsl))))
             end
         end
 
@@ -205,7 +207,21 @@ function cal_MillerDean()
                             ϵ=0.01,
                             τ = 0.25,
                             MaxStepsWithoutEpsProgress = 10000,
-                            Method=:borg_moea)            
+                            Method=:borg_moea)
+        elseif MetObj == "Triple"
+            resr = bboptimize(Calibra_MDr; 
+                            # Method = :simultaneous_perturbation_stochastic_approximation,
+                            SearchRange = boundsr,
+                            NumDimensions = 4,
+                            PopulationSize = 500,
+                            MaxSteps = 5000,
+                            FitnessTolerance = 1e-6,
+                            FitnessScheme=ParetoFitnessScheme{3}(is_minimizing=true),
+                            TraceMode=:compact,
+                            ϵ=0.01,
+                            τ = 0.25,
+                            MaxStepsWithoutEpsProgress = 10000,
+                            Method=:borg_moea)
         else
             resr = bboptimize(Calibra_MDr; 
                             Method = :adaptive_de_rand_1_bin,
