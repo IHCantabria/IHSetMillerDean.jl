@@ -171,8 +171,8 @@ function cal_MillerDean()
             
         function Calibra_MDr(Χ)
 
-            Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Y_obs[1], flagP[i], Omega)
-            # Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Χ[4], flagP[i], Omega)
+            # Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Y_obs[1], flagP[i], Omega)
+            Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Χ[4], flagP[i], Omega)
             YYsl = Ymd[idx_obs]
             if MetObj == "Pearson"
                 return 1 -  abs(sum((YYsl.-mean(YYsl)).*(Y_obs .- mean(Y_obs)))/(std(YYsl)*std(Y_obs)*length(YYsl)))
@@ -188,14 +188,15 @@ function cal_MillerDean()
         end
 
         boundsr = [(log(1e-6), log(1e-1)),
-                    (log(1e-6), log(1e-1)),
-                    (0.9*minimum(Y_obs), 1.5*maximum(Y_obs))] 
+                   (log(1e-6), log(1e-1)),
+                   (0.9*minimum(Y_obs), 1.5*maximum(Y_obs)),
+                   (0.9*minimum(Y_obs), 1.5*maximum(Y_obs))] 
 
         if MetObj == "Double"
             resr = bboptimize(Calibra_MDr; 
                             # Method = :simultaneous_perturbation_stochastic_approximation,
                             SearchRange = boundsr,
-                            NumDimensions = 3,
+                            NumDimensions = 4,
                             PopulationSize = 5000,
                             MaxSteps = 5000,
                             FitnessTolerance = 1e-6,
@@ -204,13 +205,12 @@ function cal_MillerDean()
                             ϵ=0.01,
                             τ = 0.25,
                             MaxStepsWithoutEpsProgress = 20000,
-                            TargetFitness=(1, 0.1),
                             Method=:borg_moea)            
         else
             resr = bboptimize(Calibra_MDr; 
-                            Method = :simultaneous_perturbation_stochastic_approximation,
+                            Method = :de_rand_1_bin_radiuslimited,
                             SearchRange = boundsr,
-                            NumDimensions = 3,
+                            NumDimensions = 4,
                             PopulationSize = 5000,
                             MaxSteps = 5000,
                             FitnessTolerance = 1e-6,
@@ -226,7 +226,7 @@ function cal_MillerDean()
         objr[string(i)] = best_fitness(resr)
         popr[string(i)] = best_candidate(resr)
 
-        Ymdr[string(i)] = MileerDean(Hb, depthb, sl, popr[string(i)][3], dt, D50, Hberm, exp(popr[string(i)][1]), exp(popr[string(i)][2]), Y_obs[1], flagP[i], Omega)
+        Ymdr[string(i)] = MileerDean(Hb, depthb, sl, popr[string(i)][3], dt, D50, Hberm, exp(popr[string(i)][1]), exp(popr[string(i)][2]), popr[string(i)][4], flagP[i], Omega)
 
         Ysl = Ymdr[string(i)][idx_obs]
         aRP[string(i)] = sum((Ysl.-mean(Ysl)).*(Y_obs .- mean(Y_obs)))/(std(Ysl)*std(Y_obs)*length(Ysl))
@@ -283,7 +283,6 @@ function cal_MillerDean()
             "standard_name" => "MSS")
 
     for i in eachindex(flagP)
-        
           
         nccreate(output, "kacr_flagP="*string(i),
                     "len", 1,
