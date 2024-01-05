@@ -196,10 +196,11 @@ function cal_MillerDean()
                 end
             end
 
-            boundsr = [(log(1e-7), log(1e-1)),
-                       (log(1e-7), log(1e-1)),
+            boundsr = [(log(1e-6), log(1e-2)),
+                       (log(1e-6), log(1e-2)),
                        (0.25*minimum(Y_obs), 2*maximum(Y_obs)),
-                       (0.25*minimum(Y_obs), 2*maximum(Y_obs))] 
+                       (0.25*minimum(Y_obs), 2*maximum(Y_obs))]
+                        
 
             if MetObj == "Double" || MetObj == "Double2" || MetObj == "Double3"
                 resr = bboptimize(Calibra_MDr; 
@@ -363,8 +364,8 @@ function cal_MillerDean()
                 end
             end
 
-            boundsr = [(log(1e-7), log(1e-1)),
-                       (log(1e-7), log(1e-1)),
+            boundsr = [(log(1e-6), log(1e-2)),
+                       (log(1e-6), log(1e-2)),
                        (0.25*minimum(Y_obs), 2*maximum(Y_obs))] 
 
             if MetObj == "Double" || MetObj == "Double2" || MetObj == "Double3"
