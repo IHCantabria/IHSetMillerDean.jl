@@ -148,7 +148,7 @@ function cal_MillerDean()
     idx_obs = zeros(length(t_obs))
 
     for i in eachindex(t_obs)
-        idx_obs[i] = argmin((x)-> abs.(x .- t_obs[i]), t_wav)[1]
+        idx_obs[i] = argmin(abs.(x .- t_obs[i]))[1]
     end
 
     idx_obs = convert(Array{Int64},idx_obs)
