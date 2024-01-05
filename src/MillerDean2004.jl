@@ -408,7 +408,7 @@ function cal_MillerDean()
                 #                 ϵ=0.1,
                 #                 τ = 0.05,
                 #                 MaxStepsWithoutEpsProgress = 10000)
-                resr, _ = sce_ua2(Calibra_MDr, [5e-4, 5e-5, mean(Y_obs)], 10000, 500, 3, [1e-4, 1e-5, mean(Y_obs)/20])
+                resr, _ = sce_ua2(Calibra_MDr, [5e-4, 5e-5, mean(Y_obs)], 1000, 500, 3, [1e-4, 1e-5, mean(Y_obs)/20])
             end
 
 
