@@ -196,15 +196,15 @@ function cal_MillerDean()
                 end
             end
 
-            boundsr = [(log(1e-6), log(1e-2)),
-                       (log(1e-6), log(1e-2)),
+            boundsr = [(log(1e-5), log(1e-3)),
+                       (log(1e-5), log(1e-3)),
                        (0.25*minimum(Y_obs), 2*maximum(Y_obs)),
                        (0.25*minimum(Y_obs), 2*maximum(Y_obs))] 
 
             if MetObj == "Double" || MetObj == "Double2" || MetObj == "Double3"
                 resr = bboptimize(Calibra_MDr; 
                                 # Method = :simultaneous_perturbation_stochastic_approximation,
-                                # SearchRange = boundsr,
+                                SearchRange = boundsr,
                                 NumDimensions = 4,
                                 PopulationSize = 500,
                                 MaxSteps = 5000,
@@ -218,7 +218,7 @@ function cal_MillerDean()
             elseif MetObj == "Triple"
                 resr = bboptimize(Calibra_MDr; 
                                 # Method = :simultaneous_perturbation_stochastic_approximation,
-                                # SearchRange = boundsr,
+                                SearchRange = boundsr,
                                 NumDimensions = 4,
                                 PopulationSize = 500,
                                 MaxSteps = 5000,
@@ -232,7 +232,7 @@ function cal_MillerDean()
             else
                 resr = bboptimize(Calibra_MDr; 
                                 Method = :adaptive_de_rand_1_bin,
-                                # SearchRange = boundsr,
+                                SearchRange = boundsr,
                                 NumDimensions = 4,
                                 PopulationSize = 500,
                                 MaxSteps = 5000,
@@ -363,14 +363,14 @@ function cal_MillerDean()
                 end
             end
 
-            boundsr = [(log(1e-6), log(1e-2)),
-                       (log(1e-6), log(1e-2)),
+            boundsr = [(log(1e-5), log(1e-3)),
+                       (log(1e-5), log(1e-3)),
                        (0.25*minimum(Y_obs), 2*maximum(Y_obs))] 
 
             if MetObj == "Double" || MetObj == "Double2" || MetObj == "Double3"
                 resr = bboptimize(Calibra_MDr; 
                                 # Method = :simultaneous_perturbation_stochastic_approximation,
-                                # SearchRange = boundsr,
+                                SearchRange = boundsr,
                                 NumDimensions = 3,
                                 PopulationSize = 500,
                                 MaxSteps = 5000,
@@ -384,7 +384,7 @@ function cal_MillerDean()
             elseif MetObj == "Triple"
                 resr = bboptimize(Calibra_MDr; 
                                 # Method = :simultaneous_perturbation_stochastic_approximation,
-                                # SearchRange = boundsr,
+                                SearchRange = boundsr,
                                 NumDimensions = 3,
                                 PopulationSize = 500,
                                 MaxSteps = 5000,
@@ -398,7 +398,7 @@ function cal_MillerDean()
             else
                 resr = bboptimize(Calibra_MDr; 
                                 Method = :adaptive_de_rand_1_bin,
-                                # SearchRange = boundsr,
+                                SearchRange = boundsr,
                                 NumDimensions = 3,
                                 PopulationSize = 500,
                                 MaxSteps = 5000,
