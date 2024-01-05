@@ -228,7 +228,7 @@ function cal_MillerDean()
                             Method=:borg_moea)
         else
             resr = bboptimize(Calibra_MDr; 
-                            Method = :adaptive_de_rand_1_bin,
+                            Method = :de_rand_1_bin,
                             SearchRange = boundsr,
                             NumDimensions = 4,
                             PopulationSize = 500,
