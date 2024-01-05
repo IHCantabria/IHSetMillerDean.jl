@@ -196,8 +196,8 @@ function cal_MillerDean()
                 end
             end
 
-            boundsr = [(log(1e-5), log(1e-3)),
-                       (log(1e-5), log(1e-3)),
+            boundsr = [(log(1e-7), log(1e-1)),
+                       (log(1e-7), log(1e-1)),
                        (0.25*minimum(Y_obs), 2*maximum(Y_obs)),
                        (0.25*minimum(Y_obs), 2*maximum(Y_obs))] 
 
@@ -211,8 +211,8 @@ function cal_MillerDean()
                                 FitnessTolerance = 1e-6,
                                 FitnessScheme=ParetoFitnessScheme{2}(is_minimizing=true),
                                 TraceMode=:compact,
-                                ϵ=0.01,
-                                τ = 0.25,
+                                ϵ=0.1,
+                                τ = 0.05,
                                 MaxStepsWithoutEpsProgress = 10000,
                                 Method=:borg_moea)
             elseif MetObj == "Triple"
@@ -225,8 +225,8 @@ function cal_MillerDean()
                                 FitnessTolerance = 1e-6,
                                 FitnessScheme=ParetoFitnessScheme{3}(is_minimizing=true),
                                 TraceMode=:compact,
-                                ϵ=0.01,
-                                τ = 0.25,
+                                ϵ=0.1,
+                                τ = 0.05,
                                 MaxStepsWithoutEpsProgress = 10000,
                                 Method=:borg_moea)
             else
@@ -238,8 +238,8 @@ function cal_MillerDean()
                                 MaxSteps = 5000,
                                 FitnessTolerance = 1e-6,
                                 TraceMode=:compact,
-                                ϵ=0.01,
-                                τ = 0.25,
+                                ϵ=0.1,
+                                τ = 0.05,
                                 MaxStepsWithoutEpsProgress = 10000)
             end
 
@@ -363,8 +363,8 @@ function cal_MillerDean()
                 end
             end
 
-            boundsr = [(log(1e-5), log(1e-3)),
-                       (log(1e-5), log(1e-3)),
+            boundsr = [(log(1e-7), log(1e-1)),
+                       (log(1e-7), log(1e-1)),
                        (0.25*minimum(Y_obs), 2*maximum(Y_obs))] 
 
             if MetObj == "Double" || MetObj == "Double2" || MetObj == "Double3"
@@ -377,8 +377,8 @@ function cal_MillerDean()
                                 FitnessTolerance = 1e-6,
                                 FitnessScheme=ParetoFitnessScheme{2}(is_minimizing=true),
                                 TraceMode=:compact,
-                                ϵ=0.01,
-                                τ = 0.25,
+                                ϵ=0.1,
+                                τ = 0.05,
                                 MaxStepsWithoutEpsProgress = 10000,
                                 Method=:borg_moea)
             elseif MetObj == "Triple"
@@ -391,8 +391,8 @@ function cal_MillerDean()
                                 FitnessTolerance = 1e-6,
                                 FitnessScheme=ParetoFitnessScheme{3}(is_minimizing=true),
                                 TraceMode=:compact,
-                                ϵ=0.01,
-                                τ = 0.25,
+                                ϵ=0.1,
+                                τ = 0.05,
                                 MaxStepsWithoutEpsProgress = 10000,
                                 Method=:borg_moea)
             else
@@ -404,8 +404,8 @@ function cal_MillerDean()
                                 MaxSteps = 5000,
                                 FitnessTolerance = 1e-6,
                                 TraceMode=:compact,
-                                ϵ=0.01,
-                                τ = 0.25,
+                                ϵ=0.1,
+                                τ = 0.05,
                                 MaxStepsWithoutEpsProgress = 10000)
             end
 
