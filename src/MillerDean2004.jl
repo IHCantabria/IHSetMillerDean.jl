@@ -397,24 +397,26 @@ function cal_MillerDean()
                                 MaxStepsWithoutEpsProgress = 10000,
                                 Method=:borg_moea)
             else
-                resr = bboptimize(Calibra_MDr; 
-                                Method = :adaptive_de_rand_1_bin,
-                                SearchRange = boundsr,
-                                NumDimensions = 3,
-                                PopulationSize = 500,
-                                MaxSteps = 5000,
-                                FitnessTolerance = 1e-6,
-                                TraceMode=:compact,
-                                ϵ=0.1,
-                                τ = 0.05,
-                                MaxStepsWithoutEpsProgress = 10000)
+                # resr = bboptimize(Calibra_MDr; 
+                #                 Method = :adaptive_de_rand_1_bin,
+                #                 SearchRange = boundsr,
+                #                 NumDimensions = 3,
+                #                 PopulationSize = 500,
+                #                 MaxSteps = 5000,
+                #                 FitnessTolerance = 1e-6,
+                #                 TraceMode=:compact,
+                #                 ϵ=0.1,
+                #                 τ = 0.05,
+                #                 MaxStepsWithoutEpsProgress = 10000)
+                resr, _ = sce_ua2(Calibra_MDr, [5e-4, 5e-5, mean(Y_obs)], 10000, 500, 3, [1e-4, 1e-5, mean(Y_obs)/20])
             end
 
 
             
 
-            objr[string(i)] = best_fitness(resr)
-            popr[string(i)] = best_candidate(resr)
+            # objr[string(i)] = best_fitness(resr)
+            # popr[string(i)] = best_candidate(resr)
+            popr[string(i)] = resr
 
             Ymdr[string(i)] = MileerDean(Hb, depthb, sl, popr[string(i)][3], dt, D50, Hberm, exp(popr[string(i)][1]), exp(popr[string(i)][2]), Y_obs[1], flagP[i], Omega)
 
@@ -548,6 +550,55 @@ function MileerDean(Hb, depthb, sl, Y0, dt, D50, Hberm, kero, kacr, Yi, flagP = 
     end
 
     return Y
+end
+
+
+function sce_ua2(f, x0, ngen, npop, npar, mag)
+    # Initialize the population
+    pop = Array{Float64}(undef, npop, npar)
+    for i in 1:npop
+        pop[i,:] = x0 .+  mag .* (2. * rand(npar) .- 1)
+        # for j in 1:npar
+        #     pop[i,j] = min(upper_bounds[j], max(lower_bounds[j], pop[i,j]))
+        # end
+    end
+
+
+    # Main loop
+    fvals = Array{Float64}(undef, npop)
+    for gen in 1:ngen
+        # Shuffle the population
+        for i in 1:npar
+            pop[:,i] = shuffle(pop[:,i])
+        end
+        
+        # Evaluate the function for all individuals in the population
+        for i in 1:npop
+            fvals[i] = f(pop[i,:])
+        end
+        
+        # Complex evolution
+        for i in 1:2:npop
+            x1 = pop[i,:]
+            x2 = pop[i+1,:]
+            y1 = fvals[i]
+            y2 = fvals[i+1]
+            
+            if y1 < y2
+                # Use x1 as the better individual
+                pop[i+1,:] = x1 .+ 0.5 .* (x2 .- x1) .+ 0.5 .* mag .* (2. * rand(npar) .- 1)
+            else
+                # Use x2 as the better individual
+                pop[i,:] = x2 .+ 0.5 .* (x1 .- x2) .+ 0.5 .* mag .* (2. * rand(npar) .- 1)
+            end
+        end
+        println("Progress = " * string(gen/ngen*100) * " %")
+        println("Generation: $gen / $ngen")
+        println()
+    end
+    
+    # Return the best solution
+    return pop[argmin(fvals)[1],:], minimum(fvals)
 end
 
 
