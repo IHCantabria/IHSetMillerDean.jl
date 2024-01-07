@@ -2,7 +2,7 @@
 
 julia_version = "1.9.4"
 manifest_format = "2.0"
-project_hash = "4711a5adfdaebf05b03ac7e8e7b34f2cdba0d7ab"
+project_hash = "f1efe12a84924c3cd2b7e0f5f065f55325088dde"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra", "Requires"]
@@ -559,12 +559,6 @@ deps = ["ConstructionBase", "Future", "MacroTools", "StaticArraysCore"]
 git-tree-sha1 = "e2cc6d8c88613c05e1defb55170bf5ff211fbeac"
 uuid = "efcf1570-3423-57d1-acb7-fd33fddbac46"
 version = "1.1.1"
-
-[[deps.Shuffle]]
-deps = ["Random"]
-git-tree-sha1 = "b812fb30d6d8b295b71dd5a4102d1ae7b60698e3"
-uuid = "bf21e494-c40e-4daa-abfb-de5ec0aad010"
-version = "0.1.1"
 
 [[deps.SimpleBufferStream]]
 git-tree-sha1 = "874e8867b33a00e784c8a7e4b60afe9e037b74e1"
