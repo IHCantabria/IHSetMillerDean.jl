@@ -17,7 +17,6 @@
 """
 
 function run_MillerDean()
-
     
     println("Loading libraries...")
     wrkDir = pwd()
@@ -172,7 +171,7 @@ function cal_MillerDean()
 
         for i in eachindex(flagP)
                 
-            function Calibra_MDr(Χ)
+            function Calibra_4r(Χ)
 
                 # Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Y_obs[1], flagP[i], Omega)
                 Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Χ[4], flagP[i], Omega)
@@ -203,7 +202,7 @@ function cal_MillerDean()
                         
 
             if MetObj == "Double" || MetObj == "Double2" || MetObj == "Double3"
-                resr = bboptimize(Calibra_MDr; 
+                resr = bboptimize(Calibra_4r; 
                                 # Method = :simultaneous_perturbation_stochastic_approximation,
                                 SearchRange = boundsr,
                                 NumDimensions = 4,
@@ -217,7 +216,7 @@ function cal_MillerDean()
                                 MaxStepsWithoutEpsProgress = 10000,
                                 Method=:borg_moea)
             elseif MetObj == "Triple"
-                resr = bboptimize(Calibra_MDr; 
+                resr = bboptimize(Calibra_4r; 
                                 # Method = :simultaneous_perturbation_stochastic_approximation,
                                 SearchRange = boundsr,
                                 NumDimensions = 4,
@@ -231,7 +230,7 @@ function cal_MillerDean()
                                 MaxStepsWithoutEpsProgress = 10000,
                                 Method=:borg_moea)
             else
-                resr = bboptimize(Calibra_MDr; 
+                resr = bboptimize(Calibra_4r; 
                                 Method = :adaptive_de_rand_1_bin,
                                 SearchRange = boundsr,
                                 NumDimensions = 4,
@@ -258,7 +257,8 @@ function cal_MillerDean()
             aMSS[string(i)] = 1 - sum((Ysl .- Y_obs).^2)/length(Ysl)/(var(Ysl)+var(Y_obs)+(mean(Ysl)-mean(Y_obs))^2)
 
         end
-        println("\n\n****************Finished****************\n\n")
+
+        println("\n\n****************Writing output****************\n\n")
 
         year_atts = Dict("long_name" => "Year")
         month_atts = Dict("long_name" => "Month")
@@ -341,7 +341,7 @@ function cal_MillerDean()
     elseif calPar == 3
         for i in eachindex(flagP)
                 
-            function Calibra_MDr(Χ)
+            function Calibra_3r(Χ)
 
                 Ymd = MileerDean(Hb, depthb, sl, Χ[3], dt, D50, Hberm, exp(Χ[1]), exp(Χ[2]), Y_obs[1], flagP[i], Omega)
                 YYsl = Ymd[idx_obs]
@@ -369,7 +369,7 @@ function cal_MillerDean()
                        (0.25*minimum(Y_obs), 2*maximum(Y_obs))] 
 
             if MetObj == "Double" || MetObj == "Double2" || MetObj == "Double3"
-                resr = bboptimize(Calibra_MDr; 
+                resr = bboptimize(Calibra_3r; 
                                 # Method = :simultaneous_perturbation_stochastic_approximation,
                                 SearchRange = boundsr,
                                 NumDimensions = 3,
@@ -383,7 +383,7 @@ function cal_MillerDean()
                                 MaxStepsWithoutEpsProgress = 10000,
                                 Method=:borg_moea)
             elseif MetObj == "Triple"
-                resr = bboptimize(Calibra_MDr; 
+                resr = bboptimize(Calibra_3r; 
                                 # Method = :simultaneous_perturbation_stochastic_approximation,
                                 SearchRange = boundsr,
                                 NumDimensions = 3,
@@ -397,7 +397,7 @@ function cal_MillerDean()
                                 MaxStepsWithoutEpsProgress = 10000,
                                 Method=:borg_moea)
             else
-                resr = bboptimize(Calibra_MDr; 
+                resr = bboptimize(Calibra_3r; 
                                 Method = :adaptive_de_rand_1_bin,
                                 SearchRange = boundsr,
                                 NumDimensions = 3,
@@ -425,7 +425,7 @@ function cal_MillerDean()
 
         end
 
-        println("\n\n****************Finished****************\n\n")
+        println("\n\n****************Writing output****************\n\n")
 
         year_atts = Dict("long_name" => "Year")
         month_atts = Dict("long_name" => "Month")
@@ -452,26 +452,26 @@ function cal_MillerDean()
         ncwrite(HH, output, "hour")  
 
         Y_atts = Dict("units" => "m",
-                "long_name" => "Shoreline position",
-                "standard_name" => "Y")
-            kacr_atts = Dict("units" => "-",
-                "long_name" => "Accretion coefficient",
-                "standard_name" => "kacr")
-            kero_atts = Dict("units" => "-",
-                "long_name" => "Erosion coefficient",
-                "standard_name" => "kero")
-            Y0_atts = Dict("units" => "m",
-                "long_name" => "Base position",
-                "standard_name" => "Y0")
-            RP_atts = Dict("units" => "-",
-                "long_name" => "Pearson correlation coefficient",
-                "standard_name" => "RP")
-            RMSE_atts = Dict("units" => "m",
-                "long_name" => "Root mean square error",
-                "standard_name" => "RMSE")
-            MSS_atts = Dict("units" => "-",
-                "long_name" => "Mielke Skill Score",
-                "standard_name" => "MSS")
+            "long_name" => "Shoreline position",
+            "standard_name" => "Y")
+        kacr_atts = Dict("units" => "-",
+            "long_name" => "Accretion coefficient",
+            "standard_name" => "kacr")
+        kero_atts = Dict("units" => "-",
+            "long_name" => "Erosion coefficient",
+            "standard_name" => "kero")
+        Y0_atts = Dict("units" => "m",
+            "long_name" => "Base position",
+            "standard_name" => "Y0")
+        RP_atts = Dict("units" => "-",
+            "long_name" => "Pearson correlation coefficient",
+            "standard_name" => "RP")
+        RMSE_atts = Dict("units" => "m",
+            "long_name" => "Root mean square error",
+            "standard_name" => "RMSE")
+        MSS_atts = Dict("units" => "-",
+            "long_name" => "Mielke Skill Score",
+            "standard_name" => "MSS")
 
         for i in eachindex(flagP)
             
